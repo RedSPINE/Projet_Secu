@@ -12,6 +12,8 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Il prend en paramètre un nom de fichier, sans l'extension .csv et qui doit se trouver dans le répertoire csv/, et créer un fichier dans ce même répertoire de la forme : "fichier_rep.csv".
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Le fichier de sortie d'ARX peut être réparé de plusieurs manière, avec différentes options qui sont paramètrables via le fichier **reparateur.conf**.
+
 &nbsp;
 
 ## Utilisation
