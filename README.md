@@ -4,7 +4,7 @@
 
 ### ARX
 
-ARX used for k-anonymisation, t-closeness, l-diversité, differencial privacy, and more.
+ARX used for k-anonymisation, t-closeness, l-diversity, differencial privacy, and more.
 
 Combination of k-anonymisation and l-diversity. 50% of lines max deleted.
 
