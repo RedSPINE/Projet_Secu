@@ -90,9 +90,11 @@ def configurateur() :
 
 def first_line(l1, line) :
     curseur = 0
-    while line[curseur] != "," :
+    global ordonate
+    if ordonate == "oui" :
+        while line[curseur] != "," :
+            curseur += 1
         curseur += 1
-    curseur += 1
     while line[curseur] != "\n" :
         f_dest.write(line[curseur])
         curseur += 1
