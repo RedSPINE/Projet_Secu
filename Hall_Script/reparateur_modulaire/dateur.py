@@ -1,5 +1,5 @@
 def calculateur() :
-    f_source = open("/csv/ground_truth.csv", "r")
+    f_source = open("csv/ground_truth.csv", "r")
     l1 = True
     tab = [[] for i in range(12)]
     for line in f_source :

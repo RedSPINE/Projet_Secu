@@ -1,4 +1,5 @@
 import sys
+import os
 import mediateur
 import dateur
 from random import randrange
@@ -86,18 +87,213 @@ def configurateur() :
     conf.close()
     return 1
 
+
 def first_line(l1, line) :
-    if l1 == True :
-        l1 = False
-        curseur = 0
+    curseur = 0
+    while line[curseur] != "," :
+        curseur += 1
+    curseur += 1
+    while line[curseur] != "\n" :
+        f_dest.write(line[curseur])
+        curseur += 1
+    f_dest.write("\n")
+    return False
+
+
+def delete(line) :
+    curs = 0
+    while line[curs] != "\n" :
+        curs += 1
+    if line[curs - 1] == "*" :
+        f_dest.write("DEL,1111/11/11,11:11,11111,11.11,11\n")
+        return True
+    else :
+        return False
+
+
+def order(line, curseur) :
+    global ordonate
+    if ordonate == "oui" :
         while line[curseur] != "," :
             curseur += 1
         curseur += 1
-        while line[curseur] != "\n" :
+    return curseur
+
+
+def client(line, curseur) :
+    global id_user
+    global f_dest
+    user = []
+    while line[curseur] != "," :
+        user.append(line[curseur])
+        curseur += 1
+    user = "".join(user)
+    if id_user == "hash" :
+        sel = [str(hash(str(randrange(314159265359)))) for i in range(13)]
+        c = curseur + 1
+        while line[c] == "/" :
+            c += 1
+        c += 1
+        mois = 0
+        while line[c] == "/" :
+            mois = mois * 10 + int(line[c])
+            c += 1
+        f_dest.write(str(hash(str(hash(user[::-1] + sel[mois-1]))[::-1])))
+    elif id_user == "clair" :
+        f_dest.write(user)
+    f_dest.write(",")
+    curseur += 1
+    return curseur
+
+
+def dates(line, curseur, med_tab) :
+    global date
+    global f_dest
+
+    # Années 
+    while line[curseur] != "/" :
+        f_dest.write(line[curseur])
+        curseur += 1
+    f_dest.write(line[curseur])
+    curseur += 1
+
+    # Mois
+    mois = 0
+    while line[curseur] != "/" :
+        mois = mois * 10 + int(line[curseur])
+        f_dest.write(line[curseur])
+        curseur += 1
+    f_dest.write(line[curseur])
+    curseur += 1
+
+    # Jours
+    if date == "mediane" :
+        jour = str(int(med_tab[mois-1]))
+        if int(jour) < 10 :
+            jour = "0" + str(jour)
+        f_dest.write(jour)
+        curseur += 2
+    elif date == "fixe" :
+        f_dest.write("15")
+        curseur += 2
+    elif date == "clair" :
+        while line[curseur] != "," :
             f_dest.write(line[curseur])
             curseur += 1
-        f_dest.write("\n")
-    return 1
+    f_dest.write(",")
+    curseur += 1
+    return curseur
+
+
+def heure(line, curseur) :
+    global hours
+    global f_dest
+    if hours == "fixe" :
+        f_dest.write("13:37")
+        curseur += 5
+    elif hours == "clair" :
+        while line[curseur] != "," :
+            f_dest.write(line[curseur])
+            curseur += 1
+    f_dest.write(",")
+    curseur += 1
+    return curseur
+
+
+def objet(line, curseur) :
+    global id_item
+    global f_dest
+    item = []
+    while line[curseur] != "," :
+        item.append(line[curseur])
+        curseur += 1
+    item = "".join(item)
+    if id_item == "hash" :
+        sel = str(hash(str(randrange(314159265359))))
+        f_dest.write(str(hash(str(hash(item[::-1] + sel))[::-1])))
+    elif id_item == "clair" :
+        f_dest.write(item)
+    f_dest.write(",")
+    curseur += 1
+    return curseur
+
+
+def prix(line, curseur, med_tab) :
+    global price
+    global f_dest
+    curseur += 2
+
+    b_inf = 0
+    b_sup = 0
+    while line[curseur] != "." :
+        b_inf = b_inf * 10 + int(line[curseur])
+        curseur += 1
+    curseur += 1
+    while line[curseur] != "," :
+        curseur += 1
+    curseur += 2
+
+    while line[curseur] != "." :
+        b_sup = b_sup * 10 + int(line[curseur])
+        curseur += 1
+
+    if price == "mediane" :
+        f_dest.write(str(med_tab[b_inf//2]))
+    elif price == "moyenne" :
+        f_dest.write(str((b_sup + b_inf)/2))
+    
+    f_dest.write(",")
+    curseur += 5
+    return curseur
+
+
+def quantite(line, curseur) :
+    global qty
+    global f_dest
+    curseur += 2
+
+    b_inf = 0
+    b_sup = 0
+    neg = 1
+    if line[curseur] == "-" :
+        neg = -1
+        curseur += 1
+    while line[curseur] != "," :
+        b_inf = b_inf * 10 + int(line[curseur])
+        curseur += 1
+    b_inf *= neg
+    curseur += 2
+    neg = 1
+    if line[curseur] == "-" :
+        neg = -1
+        curseur += 1
+    while line[curseur] != "[" :
+        b_sup = b_sup * 10 + int(line[curseur])
+        curseur += 1
+    
+    if qty == "moyenne" :
+        f_dest.write(str(int(((b_sup + b_inf)/2))))
+    
+    while line[curseur] != "\n" :
+        curseur += 1
+
+    return curseur
+
+
+def extreme(f_source, f_source2, f_dest):
+    lines = f_source.readlines()
+    lines2= f_source2.readlines()
+    for line,line2 in zip(lines, lines2):
+        if "price" in line:
+            f_dest.write(line2)
+            continue
+        columns=line.split(',')
+        columns2= line2.split(',')
+        if 1-min(float(columns[4]), float(columns2[4]) )/max(float(columns2[4]), float(columns2[4])) > 0.85:
+            f_dest.write("DEL,1111/11/11,11:11,11111,11.11,11\n")
+        else:
+            f_dest.write(line2)
+
 
 def main() :
     if len(sys.argv) == 1 :
@@ -112,28 +308,37 @@ def main() :
             return -1
         else :
             global f_source
-            f_source = open(fichier+".csv", "r")
+            f_source = open("csv/"+fichier+".csv", "r")
             global f_dest
-            f_dest = open(fichier+"_rep.csv", "w")
+            f_dest = open("csv/"+fichier+"_tmp.csv", "w")
 
             l1 = True
-            sel = [str(hash(str(randrange(314159265359)))) for i in range(13)]
-            med_tab = mediateur.main()
-            med_tab_0 = dateur.main()
-            
+            date_med_tab = dateur.main()
+            prix_med_tab = mediateur.main()
+
             for line in f_source :
-                first_line(l1, line)
-
-                ##################################################
-
-
+                curseur = 0
+                if l1 :
+                    l1 = first_line(l1, line)
+                    continue
+                if not delete(line) :
+                    curseur = order(line, curseur)
+                    curseur = client(line, curseur)
+                    curseur = dates(line, curseur, date_med_tab)
+                    curseur = heure(line, curseur)
+                    curseur = objet(line, curseur)
+                    curseur = prix(line, curseur, prix_med_tab)
+                    curseur = quantite(line, curseur)
+                    f_dest.write("\n")
+            
             f_source.close()
-            f_dest.close()
-            
+            f_dest.close()    
+
+            extreme(open("csv/ground_truth.csv", "r"), open("csv/"+fichier+"_tmp.csv", "r"), open("csv/"+fichier+"_rep.csv", "w"))
+
+            os.remove("csv/"+fichier+"_tmp.csv")
 
             
-        
-        
 
 
 if __name__ == "__main__":
