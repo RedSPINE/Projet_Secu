@@ -4,12 +4,47 @@ import numpy as np
 import json
 from utils import *
 
+class Element(object):
+
+    def __init__(self, distance, id):
+        self.total_distance = distance
+        self.id = id
+        self.nb_element = 1
+        self.moyenne= distance
+
+    def update_distance(self, distance):
+        self.total_distance += distance
+
+    def update_element(self):
+        self.nb_element += 1
+
+    def update_moyenne(self):
+        self.moyenne = self.total_distance/self.nb_element
+
+    def update(self, distance, nb_element):
+        self.update_distance(distance)
+        self.update_element()
+        self.update_moyenne()
+
+    def serialize(self):
+        return {
+            "total_distance" : self.total_distance,
+            "id" : self.id,
+            "nb_element" : self.nb_element,
+            "moyenne" : self.moyenne
+        }
+    def get_moyenne(self):
+        return self.moyenne
+
+    def get_nb_element(self):
+        return self.nb_element
+
 class Distance(object):
 
     def __init__(self):
         self.f_source = open("./data/ground_truth.csv", "r")
         self.f_anonym = open("./data/example_files/version17bis_rep8_del.csv", "r")
-        self.limit = 10
+        self.limit = 50
 
     def init_dict(self):
         lines = self.f_anonym.readlines()
@@ -29,17 +64,34 @@ class Distance(object):
         return 1-min(float(n1), float(n2))/max(float(n1),float(n2))
 
     def is_list_full(self, list):
+        """
+        Peut être plus utile
+        """
         if len(list) == self.limit:
             return True
         else:
             return False
 
-    def list_replace_last(self, list, tuple):
+    def list_replace_last(self, list, element):
         """
         Remplace le dernier élément de la liste si celui ci est supérieur au nouveau
+        Peut être plus utile
         """
-        if list[self.limit-1][0] > tuple[0]:
-            list[self.limit-1]= tuple
+        if list[self.limit-1].get_moyenne() > element.total_distance:
+            list[self.limit-1]= element
+
+    def list_append(self, list, element ):
+        for id in list:
+            if id.id == element.id:
+                id.update(element.total_distance, element.nb_element)
+                return
+        if self.is_list_full(list):
+            list.sort(key=lambda x: x.get_nb_element(), reverse = True)
+            self.list_replace_last(list, element)
+        else:
+            list.append(element) # si la liste est pas vide on ajoue la valeur sans réfléchir
+
+
 
     def distance_price(self):
         """
@@ -62,13 +114,10 @@ class Distance(object):
             for item_line in item_lines : # Parcours du fichier item
                 #print("________________________________________________________________________")
                 columns_truth = item_line.split(',')
-                distance=self.dist(columns[4], columns_truth[4]) # Calculs de la distance entre les deux prix
-                if self.is_list_full(list): # On vérifie que la liste correspondant à l'id user n'est pas full
-                    list.sort() # On tri la liste pour pas tout parcourir en comparant
-                    self.list_replace_last(list, (distance, columns_truth[0]))
-                else:
-                    list.append((distance, columns_truth[0])) # si la liste est pas vide on ajoue la valeur sans réfléchir
-            list.sort()
+                distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux prix
+                element=Element(distance, columns_truth[0])
+                self.list_append(list, element)
+            list.sort(key=lambda x: x.get_nb_element(), reverse = True)
             f_id_item.close()
         self.f_anonym.close()
         self.f_anonym = open("./data/example_files/version17bis_rep8_del.csv", "r")
@@ -86,6 +135,16 @@ class Distance(object):
     def distance_date(self):
         pass
 
+    def json_dict_object(self):
+        dict = self.distance_price()
+        new_dict= {}
+        for key , element in dict.items():
+            list = []
+            for object in element:
+                list.append(object.serialize())
+            new_dict[key] = list
+        return new_dict
+
 def main():
     """
     main
@@ -93,6 +152,6 @@ def main():
     d = Distance()
     #print(d.distance_price())
     with open("dump.json", "w") as jsdump:
-        json.dump(d.distance_price() , jsdump, indent=4)
+        json.dump(d.json_dict_object() , jsdump, indent=4)
 if __name__ == "__main__":
     main()
