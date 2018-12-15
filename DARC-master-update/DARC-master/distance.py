@@ -41,21 +41,21 @@ class Element(object):
 
 class Distance(object):
 
-    def __init__(self):
+    def __init__(self, AT):
         self.f_source = open("./data/ground_truth.csv", "r")
-        self.f_anonym = open("./data/example_files/version17bis_rep8_del.csv", "r")
+        self.f_anonym = AT
         self.limit = 50
 
     def init_dict(self):
-        lines = self.f_anonym.readlines()
+        file_to_read = open(self.f_anonym, "r")
+        lines = file_to_read.readlines()
         d_init= {}
         for line in lines :
             columns=line.split(',')
             if columns[0] == "id_user":
                 continue
             d_init[columns[0]] = []
-        self.f_anonym.close()
-        self.f_anonym = open("./data/example_files/version17bis_rep8_del.csv", "r")
+        file_to_read.close()
         return d_init
 
     def dist(self, n1, n2):
@@ -91,18 +91,17 @@ class Distance(object):
         else:
             list.append(element) # si la liste est pas vide on ajoue la valeur sans réfléchir
 
-
-
-    def distance_price(self):
+    def distance_qty(self):
         """
-        Pour chaque prix dans ground_truth, on compare ce prix avec chaque prix
+        Pour chaque quantité dans ground_truth, on compare cette quantité avec chaque quantité
         dans la table anonymisé. On sauvegarde les 10 distances
         (nb de distances enregistrées ajustable) les plus faibles pour chaque
-        prix dans ground_truth accompagné du pseudo anonymisé associé.
-        d_price = { 'id_anonym' : [(distance , 'id1'), (distance , 'id6' )...] , 'id_anonym2' : (distance , 'id45') ...}
+        quantité dans ground_truth accompagné du pseudo anonymisé associé.
+        d_qty = { 'id_anonym' : [(distance , 'id1'), (distance , 'id6' )...] , 'id_anonym2' : (distance , 'id45') ...}
         """
-        d_price = dict(self.init_dict()) # Initialisation
-        lines = self.f_anonym.readlines() # Ouverture du fichier anonym
+        d_qty = dict(self.init_dict()) # Initialisation
+        anonym_file = open(self.f_anonym, "r")
+        lines = anonym_file.readlines() # Ouverture du fichier anonym
         for line in lines : #parcours de ce fichier
             if "id_item" in line or "DEL" in line:
                 continue
@@ -110,33 +109,20 @@ class Distance(object):
             #print(columns[3])
             with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
                 item_lines = f_id_item.readlines()
-            list=d_price.get(columns[0])
+            list=d_qty.get(columns[0])
             for item_line in item_lines : # Parcours du fichier item
                 #print("________________________________________________________________________")
                 columns_truth = item_line.split(',')
-                distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux prix
+                distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux quantité
                 element=Element(distance, columns_truth[0])
                 self.list_append(list, element)
             list.sort(key=lambda x: x.get_nb_element(), reverse = True)
             f_id_item.close()
-        self.f_anonym.close()
-        self.f_anonym = open("./data/example_files/version17bis_rep8_del.csv", "r")
-        return d_price
-
-    def distance_qty(self):
-        """
-        Pour chaque quantité dans ground_truth, on compare cette qty avec chaque qty
-        dans la table anonymisé. On sauvegarde les 10 distances
-        (nb de distances enregistrées ajustable) les plus faibles pour chaque
-        qty dans ground_truth accompagné du pseudo anonymisé associé.
-        d_price = { 'id1' : ('id_anonym', distance) , 'id2' : ('id_anonym2, distance') ...}
-        """
-        pass
-    def distance_date(self):
-        pass
+        anonym_file.close()
+        return d_qty
 
     def json_dict_object(self):
-        dict = self.distance_price()
+        dict = self.distance_qty()
         new_dict= {}
         for key , element in dict.items():
             list = []
@@ -149,9 +135,10 @@ def main():
     """
     main
     """
-    d = Distance()
-    #print(d.distance_price())
+    d = Distance("./data/example_files/version17bis_rep8_del.csv")
+    #print(d.distance_qty())
     with open("dump.json", "w") as jsdump:
         json.dump(d.json_dict_object() , jsdump, indent=4)
+
 if __name__ == "__main__":
     main()
