@@ -10,10 +10,10 @@ import sys
 from collections import OrderedDict
 import time
 import math
-
+import guess_constructor as gc
 import pandas as pd
 import numpy as np
-
+import json
 from utils import *
 class Metrics(object):
 
@@ -194,6 +194,15 @@ class ReidentificationMetrics(Metrics):
 
         return f_hat
 
+    def s0_metric(self):
+        guess_s0 = gc.Guess(self._guess_inialisation())
+        dataframe = guess_s0.make_guess(0)
+        print(dataframe)
+        print(self._f_orig)
+        score = compare_f_files(self._f_orig, dataframe)
+        self._current_score.append(score)
+        return score
+
     def s1_metric(self):
         """Calculate metric S1, comparing date and quantity buy on each row.
         Update the current score value
@@ -222,7 +231,7 @@ class ReidentificationMetrics(Metrics):
         price_col = self._gt_t_col['price']
 
         f_hat = self._evaluate([id_item_col, price_col])
-
+        print(f_hat)
         score = compare_f_files(self._f_orig, f_hat)
         # Add the score to the global score for this metric
         self._current_score.append(score)
@@ -912,27 +921,27 @@ def main():
     M = list(M.index)
     M.sort()
     M = pd.DataFrame(M, columns=M_COL.values())
-    AT = pd.read_csv('./data/example_files/version17bis_rep7_del.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    AT = pd.read_csv('./data/example_files/version17bis_rep8_del.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     AT.columns = T_COL.values()
     print("Temps de lecture : {}".format(time.process_time() - start))
 
     #######################
     ### Utility Metrics ###
     #######################
-
-    start = time.process_time()
-    m = UtilityMetrics(M, T, AT)
-    print("Temps d'initialisation : {}".format(time.process_time() - start))
-
-    start = time.process_time()
-    print("E1 score : {}".format(m.e1_metric()))
-    print("E2 score : {}".format(m.e2_metric()))
-    print("E3 score : {}".format(m.e3_metric()))
-    print("E4 score : {}".format(m.e4_metric()))
-    print("E5 score : {}".format(m.e5_metric()))
-    print("E6 score : {}".format(m.e6_metric()))
-
-    print("Temps de calcul : {}".format(time.process_time() - start))
+    #
+    # start = time.process_time()
+    # m = UtilityMetrics(M, T, AT)
+    # print("Temps d'initialisation : {}".format(time.process_time() - start))
+    #
+    # start = time.process_time()
+    # print("E1 score : {}".format(m.e1_metric()))
+    # print("E2 score : {}".format(m.e2_metric()))
+    # print("E3 score : {}".format(m.e3_metric()))
+    # print("E4 score : {}".format(m.e4_metric()))
+    # print("E5 score : {}".format(m.e5_metric()))
+    # print("E6 score : {}".format(m.e6_metric()))
+    #
+    # print("Temps de calcul : {}".format(time.process_time() - start))
 
     #####################
     ### Re-id Metrics ###
@@ -943,6 +952,7 @@ def main():
     print("Temps d'initialisation : {}".format(time.process_time() - start))
 
     start = time.process_time()
+    print("S0 score : {}".format(m.s0_metric()))
     print("S1 score : {}".format(m.s1_metric()))
     print("S2 score : {}".format(m.s2_metric()))
     print("S3 score : {}".format(m.s3_metric()))

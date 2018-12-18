@@ -112,6 +112,7 @@ def compare_f_files(f_orig, f_hat):
             # One points per similarities
             f_ori_tuple = row[1:]
             f_hat_tuple = tuple(f_hat[f_hat['id_user'] == row[1]].iloc[0])
+            #print(f_hat_tuple)
             for i in range(1, 13):
                 if f_ori_tuple[i] != "DEL":
                     total += 1
@@ -229,4 +230,3 @@ def check_format_f_file(dataframe):
 
     if size_before != size_after:
         raise Exception("There should be no NaN value in the data")
-
