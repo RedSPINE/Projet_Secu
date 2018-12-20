@@ -55,7 +55,7 @@ class Metrics(object):
         # Remove NaN value from DataFrame
         data = data.dropna()
         # Remove 'DEL' row in DataFrame
-        data = data[data[self._gt_t_col['id_user']] != "DEL"]
+        data = data[str(data[self._gt_t_col['id_user']]) != "DEL"]
         #  TODO:check si il y a une seed pour l'aléa  <30-05-18, yourname> #
         data = data.reindex(np.random.permutation(data.index))
 
@@ -196,12 +196,13 @@ class ReidentificationMetrics(Metrics):
 
     def s0_metric(self):
         guess_s0 = gc.Guess(self._guess_inialisation())
-        dataframe = guess_s0.make_guess(0)
-        print(dataframe)
-        print(self._f_orig)
-        score = compare_f_files(self._f_orig, dataframe)
-        self._current_score.append(score)
-        return score
+        guess_s0.make_guess()
+
+    def s_battikh(self, f_anonym):
+        guess_s0 = gc.Guess(self._guess_inialisation(), f_anonym)
+        guess_s0.make_guess_battikh()
+
+
 
     def s1_metric(self):
         """Calculate metric S1, comparing date and quantity buy on each row.
@@ -921,7 +922,7 @@ def main():
     M = list(M.index)
     M.sort()
     M = pd.DataFrame(M, columns=M_COL.values())
-    AT = pd.read_csv('./data/example_files/version17bis_rep8_del.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    AT = pd.read_csv('./../../S_files/S_battikh_submission_1.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     AT.columns = T_COL.values()
     print("Temps de lecture : {}".format(time.process_time() - start))
 
@@ -952,17 +953,19 @@ def main():
     print("Temps d'initialisation : {}".format(time.process_time() - start))
 
     start = time.process_time()
-    print("S0 score : {}".format(m.s0_metric()))
-    print("S1 score : {}".format(m.s1_metric()))
-    print("S2 score : {}".format(m.s2_metric()))
-    print("S3 score : {}".format(m.s3_metric()))
-    print("S4 score : {}".format(m.s4_metric()))
-    print("S5 score : {}".format(m.s5_metric()))
-    print("S6 score : {}".format(m.s6_metric()))
-
-    print("Temps de calcul : {}".format(time.process_time() - start))
-
-    print("Temps de calcul TOTAL : {}".format(time.process_time() - total_time))
+    #print("S0 score : {}".format(m.s0_metric()))
+    print("S0 score : {}".format(m.s_battikh('./../../S_files/S_battikh_submission_1.csv')))
+    #
+    # print("S1 score : {}".format(m.s1_metric()))
+    # print("S2 score : {}".format(m.s2_metric()))
+    # print("S3 score : {}".format(m.s3_metric()))
+    # print("S4 score : {}".format(m.s4_metric()))
+    # print("S5 score : {}".format(m.s5_metric()))
+    # print("S6 score : {}".format(m.s6_metric()))
+    #
+    # print("Temps de calcul : {}".format(time.process_time() - start))
+    #
+    # print("Temps de calcul TOTAL : {}".format(time.process_time() - total_time))
 
     #  TODO: Thread all execution of e* and s* metrics, BUT DO NOT thread utility and Re-id metrics
     #  together because we tronc the item_id in Re-id metrics, and it appears that it's using the

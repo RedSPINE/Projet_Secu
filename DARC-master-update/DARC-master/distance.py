@@ -61,7 +61,12 @@ class Distance(object):
     def dist(self, n1, n2):
         #print( "-------------" + n1 + "---------" + n2 )
         #print(1-min(float(n1), float(n2))/max(float(n1),float(n2)))
-        return 1-min(float(n1), float(n2))/max(float(n1),float(n2))
+        n1=abs(float(n1))
+        n2=abs(float(n2))
+        if float(n1) != 0.0 and float(n2) != 0.0 :
+            return 1-min(float(n1), float(n2))/max(float(n1),float(n2))
+        else :
+            return 0.0
 
     def is_list_full(self, list):
         """
@@ -91,15 +96,12 @@ class Distance(object):
         else:
             list.append(element) # si la liste est pas vide on ajoue la valeur sans réfléchir
 
-    def distance_qty(self):
+
+    def distance_battikh(self):
         """
-        Pour chaque quantité dans ground_truth, on compare cette quantité avec chaque quantité
-        dans la table anonymisé. On sauvegarde les 10 distances
-        (nb de distances enregistrées ajustable) les plus faibles pour chaque
-        quantité dans ground_truth accompagné du pseudo anonymisé associé.
-        d_qty = { 'id_anonym' : [(distance , 'id1'), (distance , 'id6' )...] , 'id_anonym2' : (distance , 'id45') ...}
+        La spéciale battikh, on regarde et les prix et les qty, mais on garde que ce qui match
         """
-        d_qty = dict(self.init_dict()) # Initialisation
+        d_battikh = dict(self.init_dict()) # Initialisation
         anonym_file = open(self.f_anonym, "r")
         lines = anonym_file.readlines() # Ouverture du fichier anonym
         for line in lines : #parcours de ce fichier
@@ -109,7 +111,45 @@ class Distance(object):
             #print(columns[3])
             with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
                 item_lines = f_id_item.readlines()
-            list=d_qty.get(columns[0])
+            list=d_battikh.get(columns[0])
+            for item_line in item_lines : # Parcours du fichier item
+                #print("________________________________________________________________________")
+                columns_truth = item_line.split(',')
+                distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux quantité
+                distance2= self.dist(columns[4], columns_truth[4])
+                if distance2 == 0.0:
+                    element=Element(distance2, columns_truth[0])
+                    self.list_append(list, element)
+                elif distance == 0.0:
+                    element=Element(distance, columns_truth[0])
+                    self.list_append(list, element)
+            list.sort(key=lambda x: x.get_nb_element(), reverse = True)
+            f_id_item.close()
+        anonym_file.close()
+        return d_battikh
+
+
+    def distance_param(self, value=5):
+        """
+        Pour chaque quantité dans ground_truth, on compare cette quantité avec chaque quantité
+        dans la table anonymisé. On sauvegarde les 10 distances
+        (nb de distances enregistrées ajustable) les plus faibles pour chaque
+        quantité dans ground_truth accompagné du pseudo anonymisé associé.
+        d_param = { 'id_anonym' : [(distance , 'id1'), (distance , 'id6' )...] , 'id_anonym2' : (distance , 'id45') ...}
+
+        ----------IMPORTANT----------- Pour utiliser ce code pour les prix, passé value = 6
+        """
+        d_param = dict(self.init_dict()) # Initialisation
+        anonym_file = open(self.f_anonym, "r")
+        lines = anonym_file.readlines() # Ouverture du fichier anonym
+        for line in lines[1:] : #parcours de ce fichier
+            if "id_item" in line or "DEL" in line:
+                continue
+            columns = line.split(',')
+            #print(columns[3])
+            with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
+                item_lines = f_id_item.readlines()
+            list=d_param.get(columns[0])
             for item_line in item_lines : # Parcours du fichier item
                 #print("________________________________________________________________________")
                 columns_truth = item_line.split(',')
@@ -119,10 +159,10 @@ class Distance(object):
             list.sort(key=lambda x: x.get_nb_element(), reverse = True)
             f_id_item.close()
         anonym_file.close()
-        return d_qty
+        return d_param
 
     def json_dict_object(self):
-        dict = self.distance_qty()
+        dict = self.distance_param()
         new_dict= {}
         for key , element in dict.items():
             list = []
@@ -131,12 +171,24 @@ class Distance(object):
             new_dict[key] = list
         return new_dict
 
+    def json_dict_object_battikh(self):
+        dict = self.distance_battikh()
+        new_dict= {}
+        for key , element in dict.items():
+            list = []
+            for object in element:
+                list.append(object.serialize())
+            new_dict[key] = list
+        with open("battikh.json", "w") as jsdump:
+            json.dump(new_dict , jsdump, indent=4)
+        return new_dict
+
 def main():
     """
     main
     """
     d = Distance("./data/example_files/version17bis_rep8_del.csv")
-    #print(d.distance_qty())
+    #print(d.distance_param())
     with open("dump.json", "w") as jsdump:
         json.dump(d.json_dict_object() , jsdump, indent=4)
 

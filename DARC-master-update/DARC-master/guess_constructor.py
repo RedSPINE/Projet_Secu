@@ -7,14 +7,14 @@ import numpy as np
 
 class Guess(object):
 
-    def __init__(self, guess = None):
-        self.f_anonym="./data/example_files/version17bis_rep8_del.csv"
+    def __init__(self, guess = None, f_anonym = "./data/example_files/version182.csv"):
+        self.f_anonym=f_anonym
         # self._ground_truth = pd.read_csv('./data/ground_truth.csv', sep=',', engine='c', na_filter=False, low_memory=False)
         # self._anon_trans = pd.read_csv('./data/example_files/version17bis_rep8_del.csv', sep=',', engine='c', na_filter=False, low_memory=False)
         # self._gt_t_col = T_COL
         self.guess=guess
         if guess == None:
-            self.guess=self._guess_initialisation() 
+            self.guess=self._guess_initialisation()
 
     def _guess_initialisation(self):
         """Generate a virgin F^ file with DEL on each column for each id
@@ -55,7 +55,7 @@ class Guess(object):
         Remplis la colonne du dict guess correspondant au mois passé au paramètre
         """
         distance_guess = Distance("./data/anonym_by_month/annoym"+str(month+1)+".csv")
-        month_dict = distance_guess.distance_qty()
+        month_dict = distance_guess.distance_param()
         for key , element in month_dict.items():
             list=element[0:3]
             best_guess= Element(1.0, "INIT")
@@ -63,7 +63,22 @@ class Guess(object):
                 if object.moyenne < best_guess.moyenne:
                     best_guess = object
             if best_guess.moyenne < 0.8:
-                self.guess[int(best_guess.id)][month] = int(key)
+                self.guess[int(best_guess.id)][month] = str(key)
+
+    def _select_best_guess_battikh(self, month):
+        """
+        Remplis la colonne du dict guess correspondant au mois passé au paramètre
+        """
+        distance_guess = Distance("./data/anonym_by_month/annoym"+str(month+1)+".csv")
+        month_dict = distance_guess.distance_battikh()
+        distance_guess.json_dict_object_battikh()
+        for key , element in month_dict.items():
+            try:
+                element[0]
+            except IndexError:
+                continue
+            self.guess[int(element[0].id)][month] = str(key)
+
 
     def create_json(self):
         with open("guess.json", "w") as jsdump:
@@ -93,18 +108,29 @@ class Guess(object):
     def make_guess(self, split=1):
         if split == 1:
             self._month_spliter()
-        for month in range(2):
+        for month in range(12):
             self._select_best_guess(month)
-        return self.scoring()
+        self._write_csv()
         # self.create_json()
         # stat=self.stat_guess()
         # print("January :" + str(stat[0]) + "February :" + str(stat[1]) +  "March :" + str(stat[2]) +  "April :" + str(stat[3]) +
         #   "May :" + str(stat[4]) +  "June :" + str(stat[5]) +  "July :" + str(stat[6]) +  "August :" + str(stat[7])   +
         #    "September :" + str(stat[8]) +  "October :" + str(stat[9]) +  "November :" + str(stat[10]) +  "December :" +str(stat[11]))
 
+    def make_guess_battikh(self, split=1):
+        if split == 1:
+            self._month_spliter()
+        for month in range(12):
+            self._select_best_guess_battikh(month)
+        self._write_csv()
 
-    def write_csv(self):
-        pass
+
+    def _write_csv(self):
+        with open("F_reid_battikh.csv", "w") as file:
+            file.write("id_user,0,1,2,3,4,5,6,7,8,9,10,11")
+            for key, value in self.guess.items():
+                line_csv="\n"+str(key)+","+",".join(value)
+                file.write(line_csv)
 
 def main():
     guess = Guess()
