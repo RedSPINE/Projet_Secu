@@ -41,8 +41,8 @@ class Guess(object):
             month_files.append(open("./data/anonym_by_month/annoym"+str(month+1)+".csv" , "w"))
         with open(self.f_anonym, "r") as month_table:
             lines= month_table.readlines()
-            for line in lines : #parcours de ce fichier
-                if "id_user" in line:
+            for line in lines[1:] : #parcours de ce fichier
+                if "DEL" in line:
                     continue
                 columns = line.split(',')
                 m = columns[1].split('/')
@@ -62,7 +62,6 @@ class Guess(object):
             for object in list:
                 if object.moyenne < best_guess.moyenne:
                     best_guess = object
-            if best_guess.moyenne < 0.8:
                 self.guess[int(best_guess.id)][month] = str(key)
 
     def _select_best_guess_battikh(self, month):
@@ -106,8 +105,11 @@ class Guess(object):
         # compare_f_files(dataframe_original, dataframe)
 
     def make_guess(self, split=1):
+        split = 1
+        print(split)
         if split == 1:
             self._month_spliter()
+            print("bij")
         for month in range(12):
             self._select_best_guess(month)
         self._write_csv()
@@ -126,7 +128,7 @@ class Guess(object):
 
 
     def _write_csv(self):
-        with open("F_reid_battikh.csv", "w") as file:
+        with open("F_reid_benard_v2.csv", "w") as file:
             file.write("id_user,0,1,2,3,4,5,6,7,8,9,10,11")
             for key, value in self.guess.items():
                 line_csv="\n"+str(key)+","+",".join(value)

@@ -55,7 +55,7 @@ class Metrics(object):
         # Remove NaN value from DataFrame
         data = data.dropna()
         # Remove 'DEL' row in DataFrame
-        data = data[str(data[self._gt_t_col['id_user']]) != "DEL"]
+        data = data[data[self._gt_t_col['id_user']] != "DEL"]
         #  TODO:check si il y a une seed pour l'aléa  <30-05-18, yourname> #
         data = data.reindex(np.random.permutation(data.index))
 
@@ -128,7 +128,7 @@ class ReidentificationMetrics(Metrics):
         :_current_score: current score calculated by the metric already processed.
         """
         Metrics.__init__(self, M, T, AT, M_col, T_col)
-        self._f_orig = generate_f_orig(self._ground_truth, self._anon_trans, self._gt_t_col)
+        #self._f_orig = generate_f_orig(self._ground_truth, self._anon_trans, self._gt_t_col)
 
     def _gen_value_id_dic(self, attrs):
         """Generate the dictionaty which associate the value of the attributes attrs in the
@@ -194,13 +194,17 @@ class ReidentificationMetrics(Metrics):
 
         return f_hat
 
-    def s0_metric(self):
-        guess_s0 = gc.Guess(self._guess_inialisation())
+    def s0_metric(self,f_anonym):
+        guess_s0 = gc.Guess(self._guess_inialisation(), f_anonym)
         guess_s0.make_guess()
 
     def s_battikh(self, f_anonym):
         guess_s0 = gc.Guess(self._guess_inialisation(), f_anonym)
         guess_s0.make_guess_battikh()
+
+    def s_rey(self, f_anonym):
+        guess_s0 = gc.Guess(self._guess_inialisation(), f_anonym)
+        guess_s0.make_guess()
 
 
 
@@ -922,7 +926,8 @@ def main():
     M = list(M.index)
     M.sort()
     M = pd.DataFrame(M, columns=M_COL.values())
-    AT = pd.read_csv('./../../S_files/S_battikh_submission_1.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    #AT = pd.read_csv('./../../S_files/S_benard_submission_3.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    AT = pd.read_csv('./data/example_files/S_benard_submission_3.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     AT.columns = T_COL.values()
     print("Temps de lecture : {}".format(time.process_time() - start))
 
@@ -953,8 +958,8 @@ def main():
     print("Temps d'initialisation : {}".format(time.process_time() - start))
 
     start = time.process_time()
-    #print("S0 score : {}".format(m.s0_metric()))
-    print("S0 score : {}".format(m.s_battikh('./../../S_files/S_battikh_submission_1.csv')))
+    #print("S0 score : {}".format(m.s0_metric('./data/example_files/version_clair.csv')))
+    print("S0 score : {}".format(m.s_rey('./data/example_files/S_benard_submission_3.csv')))
     #
     # print("S1 score : {}".format(m.s1_metric()))
     # print("S2 score : {}".format(m.s2_metric()))
