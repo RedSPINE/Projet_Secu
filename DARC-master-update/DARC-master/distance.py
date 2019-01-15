@@ -5,12 +5,16 @@ import json
 from utils import *
 
 class Element(object):
+    """
+    This class defines what an element is for our guess_dict
+    and has methods to update these attributes
+    """
 
     def __init__(self, distance, id):
-        self.total_distance = distance
-        self.id = id
-        self.nb_element = 1
-        self.moyenne= distance
+        self.total_distance = distance #distance total where distance is the distance between original and guess
+        self.id = id #id user guess
+        self.nb_element = 1 # nb_element find for this id
+        self.moyenne= distance # mean distance
 
     def update_distance(self, distance):
         self.total_distance += distance
@@ -45,8 +49,14 @@ class Distance(object):
         self.f_source = open("./data/ground_truth.csv", "r")
         self.f_anonym = AT
         self.limit = 50
+        #this limit has been choosen in order to improve the reidentification time, it can be changed
 
     def init_dict(self):
+        """
+        Initialization of the guess_dict, this guess dict has for key id_users
+        from the csv_file and for value a list. This list will contain element
+        from the Element class
+        """
         file_to_read = open(self.f_anonym, "r")
         lines = file_to_read.readlines()
         d_init= {}
@@ -70,7 +80,7 @@ class Distance(object):
 
     def is_list_full(self, list):
         """
-        Peut être plus utile
+        Not really usefull
         """
         if len(list) == self.limit:
             return True
@@ -79,13 +89,17 @@ class Distance(object):
 
     def list_replace_last(self, list, element):
         """
-        Remplace le dernier élément de la liste si celui ci est supérieur au nouveau
-        Peut être plus utile
+        Replace the last element from the by the new if the old element has an higher
+        mean than the new
         """
         if list[self.limit-1].get_moyenne() > element.total_distance:
             list[self.limit-1]= element
 
     def list_append(self, list, element ):
+        """
+        If the element is already in the list we update total_distance and
+        the mean and increment nb_element otherwise we just add the element in the list
+        """
         for id in list:
             if id.id == element.id:
                 id.update(element.total_distance, element.nb_element)
@@ -96,8 +110,34 @@ class Distance(object):
         else:
             list.append(element) # si la liste est pas vide on ajoue la valeur sans réfléchir
 
+    def distance_by_qty_match(self):
+        """
+        La spéciale rey, on regarde les qty, mais on garde que ce qui match
+        """
+        d_rey = dict(self.init_dict()) # Initialisation
+        anonym_file = open(self.f_anonym, "r")
+        lines = anonym_file.readlines() # Ouverture du fichier anonym
+        for line in lines : #parcours de ce fichier
+            if "id_item" in line or "DEL" in line:
+                continue
+            columns = line.split(',')
+            #print(columns[3])
+            with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
+                item_lines = f_id_item.readlines()
+            list=d_rey.get(columns[0])
+            for item_line in item_lines : # Parcours du fichier item
+                #print("________________________________________________________________________")
+                columns_truth = item_line.split(',')
+                distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux quantité
+                if distance == 0.0:
+                    element=Element(distance, columns_truth[0])
+                    self.list_append(list, element)
+            list.sort(key=lambda x: x.get_nb_element(), reverse = True)
+            f_id_item.close()
+        anonym_file.close()
+        return d_rey
 
-    def distance_battikh(self):
+    def distance_by_pqty_match(self):
         """
         La spéciale battikh, on regarde et les prix et les qty, mais on garde que ce qui match
         """
@@ -147,8 +187,12 @@ class Distance(object):
                 continue
             columns = line.split(',')
             #print(columns[3])
-            with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
-                item_lines = f_id_item.readlines()
+            try:
+                with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
+                    item_lines = f_id_item.readlines()
+            except FileNotFoundError:
+                print("TRICHEUR")
+                continue
             list=d_param.get(columns[0])
             for item_line in item_lines : # Parcours du fichier item
                 #print("________________________________________________________________________")

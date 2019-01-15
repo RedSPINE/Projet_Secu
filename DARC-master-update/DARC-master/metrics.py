@@ -204,7 +204,7 @@ class ReidentificationMetrics(Metrics):
 
     def s_rey(self, f_anonym):
         guess_s0 = gc.Guess(self._guess_inialisation(), f_anonym)
-        guess_s0.make_guess()
+        guess_s0.make_guess_rey()
 
 
 
@@ -927,7 +927,7 @@ def main():
     M.sort()
     M = pd.DataFrame(M, columns=M_COL.values())
     #AT = pd.read_csv('./../../S_files/S_benard_submission_3.csv', sep=',', engine='c', na_filter=False, low_memory=False)
-    AT = pd.read_csv('./data/example_files/S_benard_submission_3.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    AT = pd.read_csv('./data/example_files/S_hecht_submission_3.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     AT.columns = T_COL.values()
     print("Temps de lecture : {}".format(time.process_time() - start))
 
@@ -959,7 +959,7 @@ def main():
 
     start = time.process_time()
     #print("S0 score : {}".format(m.s0_metric('./data/example_files/version_clair.csv')))
-    print("S0 score : {}".format(m.s_rey('./data/example_files/S_benard_submission_3.csv')))
+    print("S0 score : {}".format(m.s0_metric('./data/example_files/S_hecht_submission_3.csv')))
     #
     # print("S1 score : {}".format(m.s1_metric()))
     # print("S2 score : {}".format(m.s2_metric()))
