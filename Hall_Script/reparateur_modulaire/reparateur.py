@@ -9,7 +9,7 @@ o_id_user = ["hash", "clair"]
 o_date = ["mediane", "fixe", "clair"]
 o_hours = ["fixe", "clair"]
 o_id_item = ["hash", "clair"]
-o_price = ["mediane", "moyenne"]
+o_price = ["mediane", "moyenne", "clair"]
 o_qty = ["moyenne"]
 ordonate  = ""
 id_user = ""
@@ -223,29 +223,36 @@ def objet(line, curseur) :
 def prix(line, curseur, med_tab) :
     global price
     global f_dest
-    curseur += 2
-
-    b_inf = 0
-    b_sup = 0
-    while line[curseur] != "." :
-        b_inf = b_inf * 10 + int(line[curseur])
+    if price == "clair" :
+        while line[curseur] != "," :
+            f_dest.write(line[curseur])
+            curseur += 1
+        f_dest.write(",")
         curseur += 1
-    curseur += 1
-    while line[curseur] != "," :
+    else :
+        curseur += 2
+        b_inf = 0
+        b_sup = 0
+        while line[curseur] != "." :
+            b_inf = b_inf * 10 + int(line[curseur])
+            curseur += 1
         curseur += 1
-    curseur += 2
+        while line[curseur] != "," :
+            curseur += 1
+        curseur += 2
 
-    while line[curseur] != "." :
-        b_sup = b_sup * 10 + int(line[curseur])
-        curseur += 1
+        while line[curseur] != "." :
+            b_sup = b_sup * 10 + int(line[curseur])
+            curseur += 1
 
-    if price == "mediane" :
-        f_dest.write(str(med_tab[b_inf//2]))
-    elif price == "moyenne" :
-        f_dest.write(str((b_sup + b_inf)/2))
-    
-    f_dest.write(",")
-    curseur += 5
+        if price == "mediane" :
+            f_dest.write(str(med_tab[b_inf//2]))
+        elif price == "moyenne" :
+            f_dest.write(str((b_sup + b_inf)/2))
+
+        
+        f_dest.write(",")
+        curseur += 5
     return curseur
 
 

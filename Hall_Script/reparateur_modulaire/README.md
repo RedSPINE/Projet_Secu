@@ -71,5 +71,6 @@ qty:moyenne;
 * price
     * moyenne -> Le prix est calculé comme étant la **moyenne de l'intervale de prix** donné par ARX.
     * mediane -> Le prix est changée au profit du **prix médian de l'intervale**.
+    * clair -> Le prix **n'est pas changée**.
 * qty
     * moyenne -> La quantité est calculé comme étant la **moyenne de l'intervale de quantité** donné par ARX.
