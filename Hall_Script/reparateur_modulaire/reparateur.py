@@ -133,13 +133,18 @@ def client(line, curseur) :
     user = "".join(user)
     if id_user == "hash" :
         c = curseur + 1
-        while line[c] == "/" :
+        annee = []
+        while line[c] != "/" :
+            annee.append(line[c])
             c += 1
-        c += 1
-        mois = 0
-        while line[c] == "/" :
-            mois = mois * 10 + int(line[c])
+        if "".join(annee) == "2010" : 
+            mois = 13
+        else :
             c += 1
+            mois = 0
+            while line[c] != "/" :
+                mois = mois * 10 + int(line[c])
+                c += 1
         f_dest.write(str(hash(str(hash(user[::-1] + sel_client[mois-1]))[::-1])))
     elif id_user == "clair" :
         f_dest.write(user)
@@ -153,20 +158,27 @@ def dates(line, curseur, med_tab) :
     global f_dest
 
     # Années 
+    annee = []
     while line[curseur] != "/" :
         f_dest.write(line[curseur])
+        annee.append(line[curseur])
         curseur += 1
     f_dest.write(line[curseur])
     curseur += 1
 
     # Mois
-    mois = 0
-    while line[curseur] != "/" :
-        mois = mois * 10 + int(line[curseur])
+    if "".join(annee) == "2010" :
+        mois = 13
+        f_dest.write("12")
+        curseur += 3
+    else :
+        mois = 0
+        while line[curseur] != "/" :
+            mois = mois * 10 + int(line[curseur])
+            f_dest.write(line[curseur])
+            curseur += 1
         f_dest.write(line[curseur])
         curseur += 1
-    f_dest.write(line[curseur])
-    curseur += 1
 
     # Jours
     if date == "mediane" :

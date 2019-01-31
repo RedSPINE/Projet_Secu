@@ -1,7 +1,7 @@
 def calculateur() :
     f_source = open("csv/ground_truth.csv", "r")
     l1 = True
-    tab = [[] for i in range(12)]
+    tab = [[] for i in range(13)]
     for line in f_source :
         if l1 == True :
             l1 = False
@@ -10,14 +10,23 @@ def calculateur() :
             while line[curseur] != "," :
                 curseur += 1
             curseur += 1
+            annee = []
             while line[curseur] != "/" :
+                annee.append(line[curseur])
                 curseur += 1
-            curseur += 1
-            mois = 0
-            while line[curseur] != "/" :
-                mois = mois * 10 + int(line[curseur])
+            if "".join(annee) == "2010" : 
+                mois = 13
                 curseur += 1
-            curseur += 1
+                while line[curseur] != "/" :
+                    curseur += 1
+                curseur += 1
+            else :
+                curseur += 1
+                mois = 0
+                while line[curseur] != "/" :
+                    mois = mois * 10 + int(line[curseur])
+                    curseur += 1
+                curseur += 1
             jour = 0
             while line[curseur] != "," :
                 jour = jour * 10 + int(line[curseur])
@@ -38,7 +47,7 @@ def mediane(l):
 
 def main() :
     tab = calculateur()
-    med_tab = [[] for i in range(12)]
+    med_tab = [[] for i in range(13)]
     for i in range(len(tab)) :
         med_tab[i] = mediane(tab[i])
     return med_tab
