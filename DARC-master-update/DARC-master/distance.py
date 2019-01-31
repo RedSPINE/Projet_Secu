@@ -291,7 +291,6 @@ def main():
     main
     """
     d = Distance("./data/example_files/version17bis_rep8_del.csv")
-    #d = Distance("/Users/bekalioumayma/Documents/GitHub/Projet_Secu/DARC-master-update/DARC-master/data/example_files/submission_DEL.csv")
     #print(d.distance_param())
     with open("dump.json", "w") as jsdump:
         json.dump(d.json_dict_object() , jsdump, indent=4)
