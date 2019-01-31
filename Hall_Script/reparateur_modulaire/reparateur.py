@@ -20,6 +20,7 @@ price = ""
 qty = ""
 f_source = ""
 f_dest = ""
+sel_client = [str(hash(str(randrange(314159265359)))) for i in range(13)]
 
 def configurateur() :
     conf = open("reparateur.conf", "r")
@@ -131,7 +132,6 @@ def client(line, curseur) :
         curseur += 1
     user = "".join(user)
     if id_user == "hash" :
-        sel = [str(hash(str(randrange(314159265359)))) for i in range(13)]
         c = curseur + 1
         while line[c] == "/" :
             c += 1
@@ -140,7 +140,7 @@ def client(line, curseur) :
         while line[c] == "/" :
             mois = mois * 10 + int(line[c])
             c += 1
-        f_dest.write(str(hash(str(hash(user[::-1] + sel[mois-1]))[::-1])))
+        f_dest.write(str(hash(str(hash(user[::-1] + sel_client[mois-1]))[::-1])))
     elif id_user == "clair" :
         f_dest.write(user)
     f_dest.write(",")
