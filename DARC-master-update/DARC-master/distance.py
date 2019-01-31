@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import json
 from utils import *
+from datetime import datetime
 
 class Element(object):
     """
@@ -137,6 +138,64 @@ class Distance(object):
         anonym_file.close()
         return d_rey
 
+    def distance_dateqty(self):
+
+        d_param = dict(self.init_dict()) # Initialisation
+        anonym_file = open(self.f_anonym, "r")
+        lines = anonym_file.readlines() # Ouverture du fichier anonym
+        for line in lines : #parcours de ce fichier
+            if "id_item" in line or "DEL" in line:
+                continue
+            columns = line.split(',')
+            #print(columns[3])
+            with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
+                item_lines = f_id_item.readlines()
+            list=d_param.get(columns[0])
+            for item_line in item_lines : # Parcours du fichier item
+                #print("________________________________________________________________________")
+                columns_truth = item_line.split(',')
+                distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux quantité
+                date1 = datetime.strptime(columns[1], "%Y/%m/%d")
+                date2 = datetime.strptime(columns[1], "%Y/%m/%d")
+                if date1.year == date2.year:
+                    distance2= self.dist(date1.timetuple().tm_yday, date1.timetuple().tm_yday)#tm_yday is the day number within the current year starting with 1 for January 1st.
+                    element=Element(distance2, columns_truth[0])
+                    self.list_append(list, element)
+
+                element=Element(distance, columns_truth[0])
+                self.list_append(list, element)
+            list.sort(key=lambda x: x.get_nb_element(), reverse = True)
+            f_id_item.close()
+        anonym_file.close()
+        return d_param
+
+    def distance_date(self):
+
+        d_param = dict(self.init_dict()) # Initialisation
+        anonym_file = open(self.f_anonym, "r")
+        lines = anonym_file.readlines() # Ouverture du fichier anonym
+        for line in lines : #parcours de ce fichier
+            if "id_item" in line or "DEL" in line:
+                continue
+            columns = line.split(',')
+            #print(columns[3])
+            with open("./data/produits/"+columns[3]+".csv", "r") as f_id_item:  # Ouverture du fichier correspondant l'id_item
+                item_lines = f_id_item.readlines()
+            list=d_param.get(columns[0])
+            for item_line in item_lines : # Parcours du fichier item
+                #print("________________________________________________________________________")
+                columns_truth = item_line.split(',')
+                date1 = datetime.strptime(columns[1], "%Y/%m/%d")
+                date2 = datetime.strptime(columns[1], "%Y/%m/%d")
+                if date1.year == date2.year:
+                    distance= self.dist(date1.timetuple().tm_yday, date1.timetuple().tm_yday)#tm_yday is the day number within the current year starting with 1 for January 1st.
+                    element=Element(distance, columns_truth[0])
+                    self.list_append(list, element)
+            list.sort(key=lambda x: x.get_nb_element(), reverse = True)
+            f_id_item.close()
+        anonym_file.close()
+        return d_param
+
     def distance_by_pqty_match(self):
         """
         La spéciale battikh, on regarde et les prix et les qty, mais on garde que ce qui match
@@ -206,7 +265,7 @@ class Distance(object):
         return d_param
 
     def json_dict_object(self):
-        dict = self.distance_param()
+        dict = self.distance_date()
         new_dict= {}
         for key , element in dict.items():
             list = []
@@ -231,7 +290,8 @@ def main():
     """
     main
     """
-    d = Distance("./data/example_files/version17bis_rep8_del.csv")
+    #d = Distance("./data/example_files/version17bis_rep8_del.csv")
+    d = Distance("/Users/bekalioumayma/Documents/GitHub/Projet_Secu/DARC-master-update/DARC-master/data/example_files/submission_DEL.csv")
     #print(d.distance_param())
     with open("dump.json", "w") as jsdump:
         json.dump(d.json_dict_object() , jsdump, indent=4)
