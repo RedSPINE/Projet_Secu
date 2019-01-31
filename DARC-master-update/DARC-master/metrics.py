@@ -934,20 +934,20 @@ def main():
     #######################
     ### Utility Metrics ###
     #######################
-    #
-    # start = time.process_time()
-    # m = UtilityMetrics(M, T, AT)
-    # print("Temps d'initialisation : {}".format(time.process_time() - start))
-    #
-    # start = time.process_time()
-    # print("E1 score : {}".format(m.e1_metric()))
-    # print("E2 score : {}".format(m.e2_metric()))
-    # print("E3 score : {}".format(m.e3_metric()))
-    # print("E4 score : {}".format(m.e4_metric()))
-    # print("E5 score : {}".format(m.e5_metric()))
-    # print("E6 score : {}".format(m.e6_metric()))
-    #
-    # print("Temps de calcul : {}".format(time.process_time() - start))
+
+    start = time.process_time()
+    m = UtilityMetrics(M, T, AT)
+    print("Temps d'initialisation : {}".format(time.process_time() - start))
+
+    start = time.process_time()
+    print("E1 score : {}".format(m.e1_metric()))
+    print("E2 score : {}".format(m.e2_metric()))
+    print("E3 score : {}".format(m.e3_metric()))
+    print("E4 score : {}".format(m.e4_metric()))
+    print("E5 score : {}".format(m.e5_metric()))
+    print("E6 score : {}".format(m.e6_metric()))
+
+    print("Temps de calcul : {}".format(time.process_time() - start))
 
     #####################
     ### Re-id Metrics ###
@@ -959,18 +959,18 @@ def main():
 
     start = time.process_time()
     #print("S0 score : {}".format(m.s0_metric('./data/example_files/version_clair.csv')))
-    print("S0 score : {}".format(m.s0_metric('./data/example_files/S_hecht_submission_3.csv')))
-    #
-    # print("S1 score : {}".format(m.s1_metric()))
-    # print("S2 score : {}".format(m.s2_metric()))
-    # print("S3 score : {}".format(m.s3_metric()))
-    # print("S4 score : {}".format(m.s4_metric()))
-    # print("S5 score : {}".format(m.s5_metric()))
-    # print("S6 score : {}".format(m.s6_metric()))
-    #
-    # print("Temps de calcul : {}".format(time.process_time() - start))
-    #
-    # print("Temps de calcul TOTAL : {}".format(time.process_time() - total_time))
+    # print("S0 score : {}".format(m.s0_metric('./data/example_files/S_hecht_submission_3.csv')))
+
+    print("S1 score : {}".format(m.s1_metric()))
+    print("S2 score : {}".format(m.s2_metric()))
+    print("S3 score : {}".format(m.s3_metric()))
+    print("S4 score : {}".format(m.s4_metric()))
+    print("S5 score : {}".format(m.s5_metric()))
+    print("S6 score : {}".format(m.s6_metric()))
+
+    print("Temps de calcul : {}".format(time.process_time() - start))
+
+    print("Temps de calcul TOTAL : {}".format(time.process_time() - total_time))
 
     #  TODO: Thread all execution of e* and s* metrics, BUT DO NOT thread utility and Re-id metrics
     #  together because we tronc the item_id in Re-id metrics, and it appears that it's using the
