@@ -4,6 +4,8 @@ import numpy as np
 import json
 from utils import *
 
+SINGLE_MATCH_ALLOWED = 1
+
 class Element(object):
     """
     This class defines what an element is for our guess_dict
@@ -19,15 +21,19 @@ class Element(object):
     def update_distance(self, distance):
         self.total_distance += distance
 
-    def update_element(self):
-        self.nb_element += 1
+    def update_element(self, nb_element):
+        self.nb_element += nb_element
 
     def update_moyenne(self):
         self.moyenne = self.total_distance/self.nb_element
 
     def update(self, distance, nb_element):
         self.update_distance(distance)
-        self.update_element()
+        self.update_element(nb_element)
+        self.update_moyenne()
+
+    def single_id_item_update(self):
+        self.nb_element += 1000
         self.update_moyenne()
 
     def serialize(self):
@@ -95,7 +101,7 @@ class Distance(object):
         if list[self.limit-1].get_moyenne() > element.total_distance:
             list[self.limit-1]= element
 
-    def list_append(self, list, element ):
+    def list_append(self, list, element):
         """
         If the element is already in the list we update total_distance and
         the mean and increment nb_element otherwise we just add the element in the list
@@ -131,6 +137,8 @@ class Distance(object):
                 distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux quantité
                 if distance == 0.0:
                     element=Element(distance, columns_truth[0])
+                    if len(item_lines) == 1 and SINGLE_MATCH_ALLOWED == 1:
+                        element.single_id_item_update()
                     self.list_append(list, element)
             list.sort(key=lambda x: x.get_nb_element(), reverse = True)
             f_id_item.close()
@@ -159,9 +167,13 @@ class Distance(object):
                 distance2= self.dist(columns[4], columns_truth[4])
                 if distance2 == 0.0:
                     element=Element(distance2, columns_truth[0])
+                    if len(item_lines) == 1 and SINGLE_MATCH_ALLOWED == 1:
+                        element.single_id_item_update()
                     self.list_append(list, element)
                 elif distance == 0.0:
                     element=Element(distance, columns_truth[0])
+                    if len(item_lines) == 1 and SINGLE_MATCH_ALLOWED == 1:
+                        element.single_id_item_update()
                     self.list_append(list, element)
             list.sort(key=lambda x: x.get_nb_element(), reverse = True)
             f_id_item.close()
@@ -195,10 +207,11 @@ class Distance(object):
                 continue
             list=d_param.get(columns[0])
             for item_line in item_lines : # Parcours du fichier item
-                #print("________________________________________________________________________")
                 columns_truth = item_line.split(',')
                 distance=self.dist(columns[5], columns_truth[5]) # Calculs de la distance entre les deux quantité
                 element=Element(distance, columns_truth[0])
+                if len(item_lines) == 1 and SINGLE_MATCH_ALLOWED == 1:
+                    element.single_id_item_update()
                 self.list_append(list, element)
             list.sort(key=lambda x: x.get_nb_element(), reverse = True)
             f_id_item.close()
