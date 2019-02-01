@@ -6,7 +6,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 from multiprocessing import Queue
 from multiprocess import Manager
 GUESS_PART = list()
-NB_MONTH = 12
+NB_MONTH = 13
 import time
 #IDEA, if there is only one item in a product table, add this element with a high score
 def show_time(func):
@@ -22,7 +22,7 @@ def month_spliter(f_anonym):
     Split the anonymized file into 12 tables
     """
     month_files=[]
-    for month in range(12):
+    for month in range(13):
         month_files.append(open("./data/anonym_by_month/annoym"+str(month+1)+".csv" , "w"))
     with open(f_anonym, "r") as month_table:
         lines= month_table.readlines()
@@ -31,20 +31,23 @@ def month_spliter(f_anonym):
                 continue
             columns = line.split(',')
             m = columns[1].split('/')
-            month_files[int(m[1]) - 1].write(line)
-    for month in range(12):
+            if int(m[0]) == 2010:
+                month_files[int(m[1])].write(line)
+            else:
+                month_files[int(m[1]) - 1].write(line)
+    for month in range(13):
         month_files[month].close()
 
-def write_csv(g_1, g_2, g_3, g_4, g_5, g_6, g_7, g_8, g_9, g_10, g_11, g_12):
+def write_csv(g_1, g_2, g_3, g_4, g_5, g_6, g_7, g_8, g_9, g_10, g_11, g_12, g_13):
     """
     Write csv built on the guess made by our threads, we combine their results
     and we write csv.
     """
     with open("F_reid_hecht_v2.csv", "w") as file: #f_dest should become a user's choice
-        file.write("id_user,0,1,2,3,4,5,6,7,8,9,10,11")
-        for (key, value), (key2, value2), (key3, value3), (key4, value4), (key5, value5), (key6, value6), (key7, value7), (key8, value8), (key9, value9), (key10, value10), (key11, value11), (key12, value12) in zip(g_1.items(), g_2.items(), g_3.items(), g_4.items(), g_5.items(), g_6.items(), g_7.items(), g_8.items(), g_9.items(), g_10.items(), g_11.items(), g_12.items()):
+        file.write("id_user,0,1,2,3,4,5,6,7,8,9,10,11,12")
+        for (key, value), (key2, value2), (key3, value3), (key4, value4), (key5, value5), (key6, value6), (key7, value7), (key8, value8), (key9, value9), (key10, value10), (key11, value11), (key12, value12), (key13, value13) in zip(g_1.items(), g_2.items(), g_3.items(), g_4.items(), g_5.items(), g_6.items(), g_7.items(), g_8.items(), g_9.items(), g_10.items(), g_11.items(), g_12.items(), g_13.items()):
             # We iterate on our 3 dicts in the same time thanks to zip()
-            line_csv="\n"+str(key)+","+value+","+value2+","+value3+","+value4+","+value5+","+value6+","+value7+","+value8+","+value9+","+value10+","+value11+","+value12
+            line_csv="\n"+str(key)+","+value+","+value2+","+value3+","+value4+","+value5+","+value6+","+value7+","+value8+","+value9+","+value10+","+value11+","+value12+","+value13
             file.write(line_csv)
 
 class Reid(object):
@@ -97,7 +100,7 @@ class Reid(object):
         return (month, find_guess.guess)
 
 def maker(month , queue):
-    file_to_attack = './data/example_files/S_hecht_submission_3.csv'
+    file_to_attack = './data/example_files/S_Soumission_Aymane_1.csv'
     method_order = 'param'
     nb_element = 1
     reid = __import__("reid_multiproc")
@@ -113,11 +116,12 @@ def main():
     file_to_attack = './data/example_files/S_hecht_submission_3.csv'
     method_order = 'param'
     nb_element = 1
+    month_spliter(file_to_attack)
     manager = Manager()
-    queue_list=[manager.Queue(1) for _ in range(12)]
+    queue_list=[manager.Queue(1) for _ in range(13)]
     with Pool(6) as p:
         print("HEY")
-        p.map(maker, [i for i in range(12)], queue_list)
+        p.map(maker, [i for i in range(13)], queue_list)
     for queue in queue_list:
         GUESS_PART.append(queue.get())
     GUESS_PART.sort()
@@ -126,7 +130,7 @@ def main():
         with open(char, "w") as jsdump:
             json.dump(GUESS_PART[i][1] , jsdump, indent=4)
     write_csv(GUESS_PART[0][1], GUESS_PART[1][1] , GUESS_PART[2][1], GUESS_PART[3][1],
-    GUESS_PART[4][1] , GUESS_PART[5][1], GUESS_PART[6][1], GUESS_PART[7][1] , GUESS_PART[8][1], GUESS_PART[9][1], GUESS_PART[10][1] , GUESS_PART[11][1] )
+    GUESS_PART[4][1] , GUESS_PART[5][1], GUESS_PART[6][1], GUESS_PART[7][1] , GUESS_PART[8][1], GUESS_PART[9][1], GUESS_PART[10][1] , GUESS_PART[11][1], GUESS_PART[12][1] )
 
 if __name__ == "__main__":
     main()
