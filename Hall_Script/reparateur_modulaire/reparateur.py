@@ -169,7 +169,7 @@ def dates(line, curseur, med_tab) :
     # Mois
     if "".join(annee) == "2010" :
         mois = 13
-        f_dest.write("12")
+        f_dest.write("12/")
         curseur += 3
     else :
         mois = 0
